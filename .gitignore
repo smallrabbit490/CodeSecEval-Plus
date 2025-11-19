@@ -1,0 +1,20 @@
+# OS / 编辑器杂项
+.DS_Store
+Thumbs.db
+.vscode/
+
+# Python 字节码和缓存
+__pycache__/
+*.py[cod]
+
+# 虚拟环境
+env/
+venv/
+.venv/
+
+# Mac 打包残留
+__MACOSX/
+
+# 临时与结果文件
+/tmp/
+results/*.json

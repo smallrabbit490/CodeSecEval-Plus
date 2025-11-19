@@ -8,10 +8,10 @@ import json
 from copy import deepcopy
 
 # Setting API parameters
-openai.api_base = "https://api.aiohub.org/v1"
-openai.api_key = 'YOUR-API-KEY-HERE'
+openai.api_base = "https://api.chatanywhere.tech/v1"
+openai.api_key = "sk-PzGtSKui4MvwQa1lByn6HclLvK4FRoWw652YxnCx88cGxPM5"
+model = "gpt-4" 
 #model="gpt-3.5-turbo-1106"
-model="gpt-4o"
 
 prompt_path = "./prompts_fewshot/coder_agent_prompt.txt"
 with open(prompt_path, "r") as f:
@@ -49,7 +49,8 @@ def call_chatgpt_programmer(prompt):
             messages=[
         {"role": "system", "content": "You are a software programmer."},
         {"role": "user", "content":text},
-            ]
+            ],
+            timeout=15,
         )
         completion = completion.choices[0].message.content.strip()               
         completion = preprocess_string(completion,"python")
@@ -76,7 +77,8 @@ def call_chatgpt_analyze_static_security(completion):
             messages=[
         {"role": "system", "content": "You are a code security analyzer assistant."},
         {"role": "user", "content":gpt_prompt},
-            ]
+            ],
+            timeout=15,
         )
         new_completion = new_completion.choices[0].message.content.strip()               
         new_completion = preprocess_string(new_completion,"python")
@@ -113,7 +115,8 @@ def call_chatgpt_programmer_feedback_static(completion,entry, cwe_code, issue_te
             messages=[
         {"role": "system", "content": "You are a code developer assistant."},
         {"role": "user", "content":gpt_prompt},
-            ]
+            ],
+            timeout=15,
         )
         completion = completion.choices[0].message.content.strip()               
         completion = preprocess_string(completion,"python")
@@ -146,7 +149,8 @@ def call_chatgpt_programmer_feedback_fuzzing(completion,entry,inputs):
             messages=[
         {"role": "system", "content": "You are a code developer assistant."},
         {"role": "user", "content":gpt_prompt},
-            ]
+            ],
+            timeout=15,
         )
         completion = completion.choices[0].message.content.strip()               
         completion = preprocess_string(completion,"python")
@@ -174,7 +178,8 @@ def call_chatgpt_fuzzing_tester(prompt):
             messages=[
         {"role": "system", "content": "You are a code tester specialized in fuzzing."},
         {"role": "user", "content":text},
-            ]
+            ],
+            timeout=15,
         )
         completion = completion.choices[0].message.content.strip()               
         completion = preprocess_string(completion,"python")
@@ -204,7 +209,8 @@ def call_chatgpt_fuzzer(prompt):
             messages=[
         {"role": "system", "content": "You are a code tester specialized in fuzzing."},
         {"role": "user", "content":text},
-            ]
+            ],
+            timeout=15,
         )
         completion = completion.choices[0].message.content.strip()               
         completion = preprocess_string(completion,"python")
