@@ -133,6 +133,15 @@
      - 当前 SecEval 评估脚本主要使用了 Bandit 和数据集自带 Test，对 fuzz 测试路径和更严格的 sandbox 组合使用还不充分；
      - 在大规模运行或运行未知来源数据集时，仍建议在容器或受控环境中执行，避免潜在的系统风险。
 
+6. **Bandit 在 CodeSecEval 数据集上的漏报问题 (2025-11-30 确认)**
+   - **现象**: 在运行评估脚本时，发现许多已知存在漏洞的 `Insecure Code`（如 CWE-295, CWE-020）被 Bandit 标记为 `SAFE` (`initial_bandit_safe: true`)。
+   - **原因分析**:
+     - Bandit 是基于 AST 的轻量级静态分析工具，主要匹配特定的危险函数调用模式。
+     - 它缺乏深度的数据流分析（Taint Analysis）和对象属性追踪能力。
+     - 例如，对于 `CWE-295`，Bandit 无法检测到 `ctx.verify_mode = ssl.CERT_NONE` 这种属性赋值导致的漏洞；对于 `CWE-020`，它无法追踪从 `request.args` 到 `redirect` 的不安全数据流。
+   - **验证**: 通过编写复现脚本直接针对数据集中的漏洞代码运行 Bandit，确认其返回 Exit Code 0 (SAFE)。
+   - **结论**: 单纯依赖 Bandit 会导致较高的漏报率（False Negatives）。这进一步证明了引入 **Fuzzing Agent**（模糊测试）以及考虑使用 LLM 辅助分析（`execute_static_analysis_gpt`）的必要性，以弥补传统静态分析工具在逻辑和上下文敏感漏洞检测上的不足。
+
 ---
 
 ## 四、后续建议
