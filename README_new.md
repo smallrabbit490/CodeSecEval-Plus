@@ -141,3 +141,28 @@
 - 在解决超时问题并确认评估流程稳定后，再逐步扩大 SecEval 样本数量，并引入更多“安全智能体”指标（如多轮修复、按 CWE 分组统计等）。
 - 对 Bandit 和 fuzz 测试的结果进行统一结构化存储，为后续可视化和论文撰写提供数据基础。
 - 如需切换至 Qwen 或其他 OpenAI 协议兼容模型，可保持现有接口不变，只调整 `base_url`、`api_key` 与 `model` 即可，但仍需在新环境下重新验证超时与评估结果稳定性。
+
+---
+
+## 五、2025年11月30日 更新日志
+
+本次更新对 `eval_seceval_safety_agents.py` 及相关模块进行了重大功能扩展，主要包括：
+
+1.  **集成 Fuzzing Agent (模糊测试)**
+    - 引入 `fuzz_agent.py` 中的 `InputMutatorAgent`，在静态分析和官方测试之外，新增了 Fuzzing 测试环节。
+    - 实现了 `generate_initial_input` 函数，利用 LLM 根据题目描述自动生成符合要求的 JSON 格式初始种子输入。
+    - 实现了 `run_fuzzing_test` 函数，对代码进行基于变异的模糊测试，以发现边界条件错误和潜在崩溃。
+
+2.  **完善修复策略 (多维反馈)**
+    - **安全修复 (Security Fix)**: 当 Bandit 发现安全漏洞时，调用 `write_code_feedback_static` 进行针对性修复。
+    - **功能修复 (Functional Fix)**: 当 Bandit 认为安全但官方测试失败时，调用新增的 `write_code_feedback_functional` 进行逻辑修复。
+    - **Fuzzing 修复 (Fuzzing Fix)**: 当 Bandit 安全且官方测试通过，但 Fuzzing 失败时，调用新增的 `write_code_feedback_fuzz` 增强代码鲁棒性。
+
+3.  **增强评估基准与上下文**
+    - **使用数据集 Insecure Code**: 评估流程现在默认加载数据集提供的 `Insecure Code` 作为初始待修复代码，而非从零生成。
+    - **引入对照组 (Control Group)**: 增加了对数据集 `Secure Code` 的评估，作为安全性和功能性的基准对照。
+    - **利用漏洞标注**: 集成了 `Vulnerability-Aware Problem_Insecure Code Explanation_Annotation.json`，在修复时为 LLM 提供更准确的漏洞解释上下文。
+
+4.  **结果字段扩展**
+    - 输出结果 JSON 中新增了 `initial_fuzz_pass`, `fixed_fuzz_pass` 等字段，全面记录 Fuzzing 测试状态。
+

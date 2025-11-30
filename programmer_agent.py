@@ -1,4 +1,4 @@
-from utils import call_chatgpt_programmer, call_chatgpt_programmer_feedback_fuzzing, call_chatgpt_programmer_feedback_static
+from utils import call_chatgpt_programmer, call_chatgpt_programmer_feedback_fuzzing, call_chatgpt_programmer_feedback_static, call_chatgpt_programmer_feedback_functional
 
 class ProgrammerAgent:
     def __init__(self, entry):
@@ -10,6 +10,9 @@ class ProgrammerAgent:
         return code
     def write_code_feedback_static(self,completion,cwe_code, issue_text):
         code = call_chatgpt_programmer_feedback_static(completion,self.entry, cwe_code, issue_text)
+        return code
+    def write_code_feedback_functional(self, completion, error_msg):
+        code = call_chatgpt_programmer_feedback_functional(completion, self.entry, error_msg)
         return code
     def write_code_feedback_fuzz(self,completion,inputs):
         code = call_chatgpt_programmer_feedback_fuzzing(completion,self.entry,inputs)

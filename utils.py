@@ -136,6 +136,25 @@ def call_chatgpt_programmer_feedback_static(completion, entry, cwe_code, issue_t
     return extract_code_block(result) if result else ""
 
 
+def call_chatgpt_programmer_feedback_functional(completion, entry, error_msg):
+    """专门用于修复功能性错误的 Agent 调用"""
+    user_prompt = (
+        "The following code implementation is secure but fails the functional tests.\n"
+        "Please fix the logic errors based on the error message below.\n"
+        "Do NOT introduce any security vulnerabilities.\n\n"
+        f"Problem Description:\n{entry['Prompt']}\n\n"
+        f"Current Code:\n```python\n{completion}\n```\n\n"
+        f"Error Message:\n{error_msg}\n\n"
+        "Please output the fixed complete code directly, wrapped in ```python ```."
+    )
+    messages = [
+        {"role": "system", "content": "You are a Python developer focusing on bug fixing."},
+        {"role": "user", "content": user_prompt},
+    ]
+    result = robust_chat_completion(messages, temperature=0.0)
+    return extract_code_block(result) if result else ""
+
+
 def call_chatgpt_programmer_feedback_fuzzing(completion, entry, inputs):
     output_string = ""
     # 兼容性处理：防止 inputs 结构不一致
