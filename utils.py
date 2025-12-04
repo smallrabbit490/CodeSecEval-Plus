@@ -6,7 +6,7 @@ from typing import Optional
 from openai import OpenAI, APIError, RateLimitError, APITimeoutError, APIConnectionError
 
 
-API_KEY = "sk-PzGtSKui4MvwQa1lByn6HclLvK4FRoWw652YxnCx88cGxPM5" 
+API_KEY = "sk-yRO6jXG68nnBHh8meG3LRmSocPekyBQdDn9Sg0nqmhxx25gg" 
 BASE_URL = "https://api.chatanywhere.tech/v1"
 MODEL = "gpt-4"  
 
