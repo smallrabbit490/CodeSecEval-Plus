@@ -1,1 +1,1 @@
-<root><child>Content</child></root>
+<!DOCTYPE root [<!ENTITY test SYSTEM "http://example.com">]><root>&test;</root>

@@ -6,7 +6,7 @@ from typing import Optional
 from openai import OpenAI, APIError, RateLimitError, APITimeoutError, APIConnectionError
 
 
-API_KEY = "sk-yRO6jXG68nnBHh8meG3LRmSocPekyBQdDn9Sg0nqmhxx25gg" 
+API_KEY = "sk-1wobSgc7NfAkwUffAQzt1JBJAaVTvHGZWxm61mRy0bF0RH5w" 
 BASE_URL = "https://api.chatanywhere.tech/v1"
 MODEL = "gpt-4"  
 
@@ -142,6 +142,10 @@ def call_chatgpt_programmer_feedback_functional(completion, entry, error_msg):
         "The following code implementation is secure but fails the functional tests.\n"
         "Please fix the logic errors based on the error message below.\n"
         "Do NOT introduce any security vulnerabilities.\n\n"
+        "**CRITICAL REQUIREMENTS**:\n"
+        "1. If this is a Flask/Web view function, it MUST return a valid response object (e.g., string, dict, or Response). Do NOT return None or omit the return statement.\n"
+        "2. Validate input types before using them (e.g., check if arguments are None before passing to system calls).\n"
+        "3. Handle potential exceptions gracefully (e.g., file not found, invalid input format).\n\n"
         f"Problem Description:\n{entry['Prompt']}\n\n"
         f"Current Code:\n```python\n{completion}\n```\n\n"
         f"Error Message:\n{error_msg}\n\n"

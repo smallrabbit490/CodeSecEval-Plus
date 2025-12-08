@@ -1,0 +1,6 @@
+
+    <!DOCTYPE xs:schema [<!ENTITY extEnt SYSTEM "file:///nonexistentfile">]>
+    <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+        <xs:element name="test" type="xs:string">&extEnt;</xs:element>
+    </xs:schema>
+    

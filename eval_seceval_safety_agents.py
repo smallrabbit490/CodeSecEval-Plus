@@ -1,4 +1,5 @@
 import json
+import multiprocessing as mp
 from pathlib import Path
 
 from programmer_agent import ProgrammerAgent
@@ -9,6 +10,8 @@ from utils import call_chatgpt_programmer, robust_chat_completion
 
 DATA_PATH = Path("CodeSecEval/SecEvalBase/SecEvalBase.json")
 EXPLANATION_PATH = Path("CodeSecEval/SecEvalBase/Vulnerability-Aware Problem_Insecure Code Explanation_Annotation.json")
+OFFICIAL_TEST_TIMEOUT = 20  # seconds
+FUZZ_TEST_TIMEOUT = 20  # seconds
 
 
 def build_prompt(item):
@@ -47,57 +50,74 @@ def generate_initial_input(item):
     except:
         return {}
 
-def run_fuzzing_test(generated_code: str, item: dict, num_tests=5):
-    """运行简单的 Fuzzing 测试。"""
-    # 1. 生成初始输入
-    initial_input = generate_initial_input(item)
-    if not initial_input:
-        return True, "No input generated"
-
-    # 2. 初始化 Fuzzer
-    fuzzer = InputMutatorAgent(initial_input, item["Entry_Point"], generated_code)
-    
-    # 3. 循环变异测试
-    failed_inputs = []
-    sandbox = {"__name__": "candidate_module",
-        "__file__": "candidate_module.py",
-    }
+def _fuzz_test_worker(generated_code: str, item: dict, num_tests: int, result_queue):
+    """Execute fuzzing logic inside an isolated process."""
     try:
+        initial_input = generate_initial_input(item)
+        if not initial_input:
+            result_queue.put((True, "No input generated"))
+            return
+
+        fuzzer = InputMutatorAgent(initial_input, item["Entry_Point"], generated_code)
+        sandbox = {
+            "__name__": "candidate_module",
+            "__file__": "candidate_module.py",
+        }
         exec(generated_code, sandbox)
         func = sandbox.get(item["Entry_Point"])
-        if not func: return False, "Entry point not found"
+        if not func or not callable(func):
+            result_queue.put((False, "Entry point not found"))
+            return
 
-        for i in range(num_tests):
-            # 变异输入
+        failed_inputs = []
+        for _ in range(num_tests):
             test_input = fuzzer.mutate_inputs()
             try:
-                # 尝试调用函数
-                # 注意：这里假设 test_input 是字典，且键对应参数名，或者直接解包
-                # 简单起见，我们尝试直接传参（如果只有一个参数）或解包
                 if isinstance(test_input, dict):
                     func(**test_input)
                 elif isinstance(test_input, list):
                     func(*test_input)
                 else:
                     func(test_input)
-            except Exception as e:
-                failed_inputs.append({"inputs": test_input, "result": str(e)})
-                if len(failed_inputs) >= 1: # 只要发现一个错误就停止，节省时间
-                    break
-    except Exception as e:
-        return False, f"Fuzzing setup failed: {e}"
+            except Exception as exc:  # noqa: BLE001
+                failed_inputs.append({"inputs": test_input, "result": str(exc)})
+                break
 
-    if failed_inputs:
-        return False, failed_inputs
-    return True, "Passed"
+        if failed_inputs:
+            result_queue.put((False, failed_inputs))
+        else:
+            result_queue.put((True, "Passed"))
+    except Exception as exc:  # noqa: BLE001
+        result_queue.put((False, f"Fuzzing setup failed: {exc}"))
 
 
-def run_official_test(generated_code: str, item: dict):
-    """在内存沙箱中执行 SecEvalBase 自带的 Test.check(candidate)。
+def run_fuzzing_test(generated_code: str, item: dict, num_tests: int = 5, timeout_seconds: int | None = None):
+    """运行简单的 Fuzzing 测试（带超时保护）。"""
+    timeout = timeout_seconds if timeout_seconds is not None else FUZZ_TEST_TIMEOUT
+    ctx = mp.get_context("spawn")
+    result_queue = ctx.Queue()
+    process = ctx.Process(
+        target=_fuzz_test_worker,
+        args=(generated_code, item, num_tests, result_queue),
+    )
+    process.start()
+    process.join(timeout)
 
-    为了让 Test 代码中的相对路径（如 ./Test/xxx）正确工作，这里临时切换
-    工作目录到 CodeSecEval/SecEvalBase，再在执行结束后切回原目录。
-    """
+    if process.is_alive():
+        process.terminate()
+        process.join()
+        msg = f"Timeout: fuzzing test exceeded {timeout}s"
+        print(f"    [Fuzzing Timeout] {item['ID']}::{item['Entry_Point']} -> {msg}")
+        return False, msg
+
+    if result_queue.empty():
+        return False, "Fuzzing process ended without reporting a result"
+
+    return result_queue.get()
+
+
+def _official_test_worker(generated_code: str, item: dict, result_queue):
+    """Worker process that executes a single SecEval test run."""
     from pathlib import Path
     import os
 
@@ -105,16 +125,16 @@ def run_official_test(generated_code: str, item: dict):
         "__name__": "candidate_module",
         "__file__": "candidate_module.py",
     }
+
     try:
-        # 执行模型生成的代码
         exec(generated_code, sandbox)
 
         entry_name = item["Entry_Point"]
         if entry_name not in sandbox or not callable(sandbox[entry_name]):
-            return False, f"Entry function {entry_name} not found"
+            result_queue.put((False, f"Entry function {entry_name} not found"))
+            return
         candidate = sandbox[entry_name]
 
-        # 临时切换到 SecEvalBase 目录，以便 ./Test/... 路径生效
         base_dir = Path("CodeSecEval/SecEvalBase").resolve()
         old_cwd = Path.cwd()
         try:
@@ -124,24 +144,61 @@ def run_official_test(generated_code: str, item: dict):
             test_code = item["Test"]
             exec(test_code, sandbox, local_ns)
             if "check" not in local_ns:
-                return False, "check() not defined in Test"
+                result_queue.put((False, "check() not defined in Test"))
+                return
             check_fn = local_ns["check"]
 
             check_fn(candidate)
         finally:
             os.chdir(old_cwd)
 
-        return True, "OK"
+        result_queue.put((True, "OK"))
     except Exception as e:  # noqa: BLE001
-        return False, f"{type(e).__name__}: {e}"
+        result_queue.put((False, f"{type(e).__name__}: {e}"))
 
-def evaluate_sample(item: dict):
+
+def run_official_test(generated_code: str, item: dict, timeout_seconds: int | None = None):
+    """在内存沙箱中执行 SecEvalBase 自带的 Test.check(candidate)。
+
+    为了让 Test 代码中的相对路径（如 ./Test/xxx）正确工作，这里临时切换
+    工作目录到 CodeSecEval/SecEvalBase，再在执行结束后切回原目录。
+    """
+    timeout = timeout_seconds if timeout_seconds is not None else OFFICIAL_TEST_TIMEOUT
+    ctx = mp.get_context("spawn")
+    result_queue = ctx.Queue()
+    process = ctx.Process(
+        target=_official_test_worker,
+        args=(generated_code, item, result_queue),
+    )
+    process.start()
+    process.join(timeout)
+
+    if process.is_alive():
+        process.terminate()
+        process.join()
+        msg = f"Timeout: official test exceeded {timeout}s"
+        print(f"    [Official Test Timeout] {item['ID']}::{item['Entry_Point']} -> {msg}")
+        return False, msg
+
+    if result_queue.empty():
+        return False, "Official test process ended without reporting a result"
+
+    return result_queue.get()
+
+def evaluate_sample(
+    item: dict,
+    test_timeout: int = OFFICIAL_TEST_TIMEOUT,
+    fuzz_timeout: int | None = None,
+):
     """对单条 SecEvalBase 样本做一次：
     数据集 Insecure Code + LLM 初始实现 → 静态分析/测试/Fuzz → 修复 → 再分析。
     """
     entry = {"Prompt": item["Problem"]}
     prog_agent = ProgrammerAgent(entry)
     static_agent = ExecutorStaticAgent(entry)
+
+    if fuzz_timeout is None:
+        fuzz_timeout = FUZZ_TEST_TIMEOUT
 
     # 1. 使用数据集中的 Insecure Code
     print("  -> Using Insecure Code from dataset...")
@@ -158,7 +215,7 @@ def evaluate_sample(item: dict):
     if code_secure:
         s_res_secure = static_agent.execute_static_analysis(code_secure)
         secure_safe = (s_res_secure[0] == StaticFResult.SAFE)
-        secure_test_pass, _ = run_official_test(code_secure, item)
+        secure_test_pass, _ = run_official_test(code_secure, item, timeout_seconds=test_timeout)
         print(f"  -> Secure Code Result: BanditSafe={secure_safe}, TestPass={secure_test_pass}")
     else:
         print("  -> Secure Code not found.")
@@ -187,8 +244,12 @@ def evaluate_sample(item: dict):
         s_res_llm = static_agent.execute_static_analysis(code_llm_initial)
         llm_bandit_safe = (s_res_llm[0] == StaticFResult.SAFE)
 
-        llm_test_pass, llm_test_info = run_official_test(code_llm_initial, item)
-        llm_fuzz_pass, llm_fuzz_info = run_fuzzing_test(code_llm_initial, item)
+        llm_test_pass, llm_test_info = run_official_test(code_llm_initial, item, timeout_seconds=test_timeout)
+        llm_fuzz_pass, llm_fuzz_info = run_fuzzing_test(
+            code_llm_initial,
+            item,
+            timeout_seconds=fuzz_timeout,
+        )
         print(
             f"  -> LLM Initial Result: BanditSafe={llm_bandit_safe}, "
             f"TestPass={llm_test_pass}, FuzzPass={llm_fuzz_pass}"
@@ -235,8 +296,12 @@ def evaluate_sample(item: dict):
             print(f"  -> Re-evaluating fixed LLM code (reason={llm_fix_source})...")
             s_res_llm_fix = static_agent.execute_static_analysis(llm_fixed_code)
             llm_fixed_bandit_safe = (s_res_llm_fix[0] == StaticFResult.SAFE)
-            llm_fixed_test_pass, llm_fixed_test_info = run_official_test(llm_fixed_code, item)
-            llm_fixed_fuzz_pass, llm_fixed_fuzz_info = run_fuzzing_test(llm_fixed_code, item)
+            llm_fixed_test_pass, llm_fixed_test_info = run_official_test(llm_fixed_code, item, timeout_seconds=test_timeout)
+            llm_fixed_fuzz_pass, llm_fixed_fuzz_info = run_fuzzing_test(
+                llm_fixed_code,
+                item,
+                timeout_seconds=fuzz_timeout,
+            )
         elif llm_fix_source is not None:
             # 尝试过修复但未成功生成代码的情况，保持 fixed 字段为 None
             print("  -> LLM fix attempt failed to produce code.")
@@ -266,10 +331,14 @@ def evaluate_sample(item: dict):
             initial_issue = None
 
     # 3. 初始官方 Test
-    test_pass0, test_info0 = run_official_test(code_initial, item)
+    test_pass0, test_info0 = run_official_test(code_initial, item, timeout_seconds=test_timeout)
     
     # 3.1 初始 Fuzzing Test (新增)
-    fuzz_pass0, fuzz_info0 = run_fuzzing_test(code_initial, item)
+    fuzz_pass0, fuzz_info0 = run_fuzzing_test(
+        code_initial,
+        item,
+        timeout_seconds=fuzz_timeout,
+    )
     
     print(f"  -> Initial Result: BanditSafe={initial_safe}, TestPass={test_pass0}, FuzzPass={fuzz_pass0}")
 
@@ -317,8 +386,12 @@ def evaluate_sample(item: dict):
     if code_fixed:
         print("  -> Re-evaluating fixed code...")
         s_res1 = static_agent.execute_static_analysis(code_fixed)
-        test_pass1, test_info1 = run_official_test(code_fixed, item)
-        fuzz_pass1, fuzz_info1 = run_fuzzing_test(code_fixed, item)
+        test_pass1, test_info1 = run_official_test(code_fixed, item, timeout_seconds=test_timeout)
+        fuzz_pass1, fuzz_info1 = run_fuzzing_test(
+            code_fixed,
+            item,
+            timeout_seconds=fuzz_timeout,
+        )
     else:
         print("  -> No fix attempted.")
 
