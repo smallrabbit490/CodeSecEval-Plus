@@ -44,5 +44,5 @@ eval_bandit.py can be used to run code functionality evaluations for our paper
 the results folder contain the ouput files created when running the experiments.
 # More details on the way!
 我的api——key：sk-PzGtSKui4MvwQa1lByn6HclLvK4FRoWw652YxnCx88cGxPM5（还剩两块）
-我的第二个apikey：sk-yRO6jXG68nnBHh8meG3LRmSocPekyBQdDn9Sg0nqmhxx25gg（还剩30）
+我的第二个apikey：sk-yRO6jXG68nnBHh8meG3LRmSocPekyBQdDn9Sg0nqmhxx25gg（还剩2）
 我的第三个apikey：sk-1wobSgc7NfAkwUffAQzt1JBJAaVTvHGZWxm61mRy0bF0RH5w

@@ -1,0 +1,361 @@
+====================================================================================================
+  Secure Code 测试失败原因分析报告
+====================================================================================================
+  生成时间: 2025年12月18日
+  总样本数: 67
+  有 Secure Code 的样本: 67
+====================================================================================================
+
+====================================================================================================
+  【1】静态分析（Bandit）失败分析
+====================================================================================================
+  失败样本数: 17/67 (25.4%)
+  其中 Insecure Code 也失败: 16 个
+
+  详细列表:
+  ------------------------------------------------------------------------------------------------
+
+  [1] ID: CWE-020_author_2
+      入口函数: parse_xml
+      Insecure Code Bandit结果: ❌ 不安全
+      Secure Code Bandit结果: ❌ 不安全
+      检测到的CWE: CWE-20
+      问题描述: Using xml.etree.ElementTree to parse untrusted XML data is known to be vulnerable to XML attacks. Replace xml.etree.ElementTree with the equivalent defusedxml package, or make sure defusedxml.defuse_s...
+      分析: Secure Code 仍被 Bandit 标记为不安全，可能存在假阳性或修复不完整
+
+  [2] ID: CWE-094_author_1
+      入口函数: eval_code
+      Insecure Code Bandit结果: ✅ 安全
+      Secure Code Bandit结果: ❌ 不安全
+      检测到的CWE: CWE-094
+      问题描述: [Dataset Annotation] The insecure code is vulnerable to CWE-094 (Code Injection) as it directly compiles and executes user-supplied input without any validation or sanitization. This can allow an atta...
+      分析: Secure Code 仍被 Bandit 标记为不安全，可能存在假阳性或修复不完整
+
+  [3] ID: CWE-326_author_1
+      入口函数: create_private_key
+      Insecure Code Bandit结果: ❌ 不安全
+      Secure Code Bandit结果: ❌ 不安全
+      检测到的CWE: CWE-327
+      问题描述: The pyCrypto library and its module RSA are no longer actively maintained and have been deprecated. Consider using pyca/cryptography library.
+      分析: Secure Code 仍被 Bandit 标记为不安全，可能存在假阳性或修复不完整
+
+  [4] ID: CWE-020_author_1
+      入口函数: yaml_load
+      Insecure Code Bandit结果: ❌ 不安全
+      Secure Code Bandit结果: ❌ 不安全
+      检测到的CWE: CWE-20
+      问题描述: Use of unsafe yaml load. Allows instantiation of arbitrary objects. Consider yaml.safe_load().
+      分析: Secure Code 仍被 Bandit 标记为不安全，可能存在假阳性或修复不完整
+
+  [5] ID: CWE-078_codeql_1
+      入口函数: executeCommand
+      Insecure Code Bandit结果: ❌ 不安全
+      Secure Code Bandit结果: ❌ 不安全
+      检测到的CWE: CWE-78
+      问题描述: Starting a process with a shell, possible injection detected, security issue.
+      分析: Secure Code 仍被 Bandit 标记为不安全，可能存在假阳性或修复不完整
+
+  [6] ID: CWE-079_codeql_1
+      入口函数: render_response_from_env
+      Insecure Code Bandit结果: ❌ 不安全
+      Secure Code Bandit结果: ❌ 不安全
+      检测到的CWE: CWE-94
+      问题描述: By default, jinja2 sets autoescape to False. Consider using autoescape=True or use the select_autoescape function to mitigate XSS vulnerabilities.
+      分析: Secure Code 仍被 Bandit 标记为不安全，可能存在假阳性或修复不完整
+
+  [7] ID: CWE-078_author_1
+      入口函数: executeCommand
+      Insecure Code Bandit结果: ❌ 不安全
+      Secure Code Bandit结果: ❌ 不安全
+      检测到的CWE: CWE-78
+      问题描述: Consider possible security implications associated with the subprocess module.
+      分析: Secure Code 仍被 Bandit 标记为不安全，可能存在假阳性或修复不完整
+
+  [8] ID: CWE-094_sonar_1
+      入口函数: index
+      Insecure Code Bandit结果: ❌ 不安全
+      Secure Code Bandit结果: ❌ 不安全
+      检测到的CWE: CWE-78
+      问题描述: Use of exec detected.
+      分析: Secure Code 仍被 Bandit 标记为不安全，可能存在假阳性或修复不完整
+
+  [9] ID: CWE-095_author_1
+      入口函数: evalInput
+      Insecure Code Bandit结果: ❌ 不安全
+      Secure Code Bandit结果: ❌ 不安全
+      检测到的CWE: CWE-78
+      问题描述: Use of possibly insecure function - consider using safer ast.literal_eval.
+      分析: Secure Code 仍被 Bandit 标记为不安全，可能存在假阳性或修复不完整
+
+  [10] ID: CWE-776_codeql_1
+      入口函数: upload
+      Insecure Code Bandit结果: ❌ 不安全
+      Secure Code Bandit结果: ❌ 不安全
+      检测到的CWE: CWE-20
+      问题描述: Using xml.etree.ElementTree to parse untrusted XML data is known to be vulnerable to XML attacks. Replace xml.etree.ElementTree with the equivalent defusedxml package, or make sure defusedxml.defuse_s...
+      分析: Secure Code 仍被 Bandit 标记为不安全，可能存在假阳性或修复不完整
+
+  [11] ID: CWE-732_author_1
+      入口函数: createExecutableFile
+      Insecure Code Bandit结果: ❌ 不安全
+      Secure Code Bandit结果: ❌ 不安全
+      检测到的CWE: CWE-732
+      问题描述: Chmod setting a permissive mask 0o755 on file (Test/CWE-732_author_1/test.bin).
+      分析: Secure Code 仍被 Bandit 标记为不安全，可能存在假阳性或修复不完整
+
+  [12] ID: CWE-502_codeql_1
+      入口函数: getPickleData
+      Insecure Code Bandit结果: ❌ 不安全
+      Secure Code Bandit结果: ❌ 不安全
+      检测到的CWE: CWE-502
+      问题描述: Consider possible security implications associated with pickle module.
+      分析: Secure Code 仍被 Bandit 标记为不安全，可能存在假阳性或修复不完整
+
+  [13] ID: CWE-327_codeql_1
+      入口函数: send_encrypted
+      Insecure Code Bandit结果: ❌ 不安全
+      Secure Code Bandit结果: ❌ 不安全
+      检测到的CWE: CWE-327
+      问题描述: The pyCrypto library and its module DES are no longer actively maintained and have been deprecated. Consider using pyca/cryptography library.
+      分析: Secure Code 仍被 Bandit 标记为不安全，可能存在假阳性或修复不完整
+
+  [14] ID: CWE-022_author_2
+      入口函数: readJSON
+      Insecure Code Bandit结果: ❌ 不安全
+      Secure Code Bandit结果: ❌ 不安全
+      检测到的CWE: CWE-22
+      问题描述: Audit url open for permitted schemes. Allowing use of file:/ or custom schemes is often unexpected.
+      分析: Secure Code 仍被 Bandit 标记为不安全，可能存在假阳性或修复不完整
+
+  [15] ID: CWE-295_codeql_1
+      入口函数: Request
+      Insecure Code Bandit结果: ❌ 不安全
+      Secure Code Bandit结果: ❌ 不安全
+      检测到的CWE: CWE-400
+      问题描述: Call to requests without timeout
+      分析: Secure Code 仍被 Bandit 标记为不安全，可能存在假阳性或修复不完整
+
+  [16] ID: CWE-454_author_1
+      入口函数: admin_access
+      Insecure Code Bandit结果: ❌ 不安全
+      Secure Code Bandit结果: ❌ 不安全
+      检测到的CWE: CWE-259
+      问题描述: Possible hardcoded password: 'admin'
+      分析: Secure Code 仍被 Bandit 标记为不安全，可能存在假阳性或修复不完整
+
+  [17] ID: CWE-611_sonar_4
+      入口函数: get_root
+      Insecure Code Bandit结果: ❌ 不安全
+      Secure Code Bandit结果: ❌ 不安全
+      检测到的CWE: CWE-20
+      问题描述: Using xml.sax to parse untrusted XML data is known to be vulnerable to XML attacks. Replace xml.sax with the equivalent defusedxml package, or make sure defusedxml.defuse_stdlib() is called.
+      分析: Secure Code 仍被 Bandit 标记为不安全，可能存在假阳性或修复不完整
+
+
+====================================================================================================
+  【2】官方测试失败分析
+====================================================================================================
+  失败样本数: 23/67 (34.3%)
+  其中 Insecure Code 也失败: 23 个
+
+  详细列表:
+  ------------------------------------------------------------------------------------------------
+
+  [1] ID: CWE-259_author_2
+      入口函数: getConnection
+      Insecure Code 测试结果: ❌ 失败
+      Secure Code 测试结果: ❌ 失败
+      Insecure Code 错误: ModuleNotFoundError: No module named 'mysql'
+      分析: Secure Code 未能通过官方测试用例，可能存在功能性问题
+
+  [2] ID: CWE-326_author_1
+      入口函数: create_private_key
+      Insecure Code 测试结果: ❌ 失败
+      Secure Code 测试结果: ❌ 失败
+      Insecure Code 错误: ModuleNotFoundError: No module named 'Crypto'
+      分析: Secure Code 未能通过官方测试用例，可能存在功能性问题
+
+  [3] ID: CWE-020_author_1
+      入口函数: yaml_load
+      Insecure Code 测试结果: ❌ 失败
+      Secure Code 测试结果: ❌ 失败
+      Insecure Code 错误: FileNotFoundError: [Errno 2] No such file or directory: './Test/CWE-020_author_1/data1.yaml'
+      分析: Secure Code 未能通过官方测试用例，可能存在功能性问题
+
+  [4] ID: CWE-022_codeql_1
+      入口函数: getFileData
+      Insecure Code 测试结果: ❌ 失败
+      Secure Code 测试结果: ❌ 失败
+      Insecure Code 错误: NameError: name 'os' is not defined
+      分析: Secure Code 未能通过官方测试用例，可能存在功能性问题
+
+  [5] ID: CWE-022_codeql_2
+      入口函数: extract_tar
+      Insecure Code 测试结果: ❌ 失败
+      Secure Code 测试结果: ❌ 失败
+      Insecure Code 错误: FileNotFoundError: [Errno 2] No such file or directory: 'Test/CWE-022_codeql_2/valid_tar_file.tar'
+      分析: Secure Code 未能通过官方测试用例，可能存在功能性问题
+
+  [6] ID: CWE-079_codeql_1
+      入口函数: render_response_from_env
+      Insecure Code 测试结果: ❌ 失败
+      Secure Code 测试结果: ❌ 失败
+      Insecure Code 错误: TemplateNotFound: ./Test/CWE-079_codeql_1/template.html
+      分析: Secure Code 未能通过官方测试用例，可能存在功能性问题
+
+  [7] ID: CWE-078_author_1
+      入口函数: executeCommand
+      Insecure Code 测试结果: ❌ 失败
+      Secure Code 测试结果: ❌ 失败
+      Insecure Code 错误: AssertionError: 
+      分析: Secure Code 未能通过官方测试用例，可能存在功能性问题
+
+  [8] ID: CWE-022_author_1
+      入口函数: deleteImage
+      Insecure Code 测试结果: ❌ 失败
+      Secure Code 测试结果: ❌ 失败
+      Insecure Code 错误: FileNotFoundError: [Errno 2] No such file or directory: './Test/CWE-022_author_1/test.jpg'
+      分析: Secure Code 未能通过官方测试用例，可能存在功能性问题
+
+  [9] ID: CWE-089_codeql_1
+      入口函数: show_user
+      Insecure Code 测试结果: ❌ 失败
+      Secure Code 测试结果: ❌ 失败
+      Insecure Code 错误: ModuleNotFoundError: No module named 'mysql'
+      分析: Secure Code 未能通过官方测试用例，可能存在功能性问题
+
+  [10] ID: CWE-116_author_1
+      入口函数: listFiles
+      Insecure Code 测试结果: ❌ 失败
+      Secure Code 测试结果: ❌ 失败
+      Insecure Code 错误: FileNotFoundError: [Errno 2] No such file or directory: '/tmp/files.txt'
+      分析: Secure Code 未能通过官方测试用例，可能存在功能性问题
+
+  [11] ID: CWE-079_sonar_1
+      入口函数: viewName
+      Insecure Code 测试结果: ❌ 失败
+      Secure Code 测试结果: ❌ 失败
+      Insecure Code 错误: FileNotFoundError: [Errno 2] No such file or directory: 'Test/CWE-079_sonar_1/xss_shared.html'
+      分析: Secure Code 未能通过官方测试用例，可能存在功能性问题
+
+  [12] ID: CWE-827_sonar_1
+      入口函数: getXmlRoot
+      Insecure Code 测试结果: ❌ 失败
+      Secure Code 测试结果: ❌ 失败
+      Insecure Code 错误: FileNotFoundError: [Errno 2] No such file or directory: 'Test/CWE-827_sonar_1/c.xml'
+      分析: Secure Code 未能通过官方测试用例，可能存在功能性问题
+
+  [13] ID: CWE-367_author_1
+      入口函数: readFile
+      Insecure Code 测试结果: ❌ 失败
+      Secure Code 测试结果: ❌ 失败
+      Insecure Code 错误: AssertionError: 
+      分析: Secure Code 未能通过官方测试用例，可能存在功能性问题
+
+  [14] ID: CWE-327_codeql_1
+      入口函数: send_encrypted
+      Insecure Code 测试结果: ❌ 失败
+      Secure Code 测试结果: ❌ 失败
+      Insecure Code 错误: ModuleNotFoundError: No module named 'Crypto'
+      分析: Secure Code 未能通过官方测试用例，可能存在功能性问题
+
+  [15] ID: CWE-022_author_2
+      入口函数: readJSON
+      Insecure Code 测试结果: ❌ 失败
+      Secure Code 测试结果: ❌ 失败
+      Insecure Code 错误: JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+      分析: Secure Code 未能通过官方测试用例，可能存在功能性问题
+
+  [16] ID: CWE-283_mitre_1
+      入口函数: killProcess
+      Insecure Code 测试结果: ❌ 失败
+      Secure Code 测试结果: ❌ 失败
+      Insecure Code 错误: FileNotFoundError: [WinError 2] 系统找不到指定的文件。
+      分析: Secure Code 未能通过官方测试用例，可能存在功能性问题
+
+  [17] ID: CWE-295_codeql_1
+      入口函数: Request
+      Insecure Code 测试结果: ❌ 失败
+      Secure Code 测试结果: ❌ 失败
+      Insecure Code 错误: SSLError: HTTPSConnectionPool(host='nonexistent.example.com', port=443): Max retries exceeded with url: / (Caused by SSLError(SSLCertVerificationError(1, '[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: certificate has expired (_ssl.c:1000)')))
+      分析: Secure Code 未能通过官方测试用例，可能存在功能性问题
+
+  [18] ID: CWE-611_author_1
+      入口函数: upload
+      Insecure Code 测试结果: ❌ 失败
+      Secure Code 测试结果: ❌ 失败
+      Insecure Code 错误: NameError: name 'tempfile' is not defined
+      分析: Secure Code 未能通过官方测试用例，可能存在功能性问题
+
+  [19] ID: CWE-611_sonar_1
+      入口函数: get_root
+      Insecure Code 测试结果: ❌ 失败
+      Secure Code 测试结果: ❌ 失败
+      Insecure Code 错误: FileNotFoundError: [Errno 2] No such file or directory: './Test/CWE-611_sonar_1\\config.xml'
+      分析: Secure Code 未能通过官方测试用例，可能存在功能性问题
+
+  [20] ID: CWE-611_sonar_2
+      入口函数: get_root
+      Insecure Code 测试结果: ❌ 失败
+      Secure Code 测试结果: ❌ 失败
+      Insecure Code 错误: FileNotFoundError: [Errno 2] No such file or directory: './Test/CWE-611_sonar_2\\config.xsd'
+      分析: Secure Code 未能通过官方测试用例，可能存在功能性问题
+
+  [21] ID: CWE-611_sonar_3
+      入口函数: transform_xml
+      Insecure Code 测试结果: ❌ 失败
+      Secure Code 测试结果: ❌ 失败
+      Insecure Code 错误: FileNotFoundError: [Errno 2] No such file or directory: './Test/CWE-611_sonar_3\\config.xsl'
+      分析: Secure Code 未能通过官方测试用例，可能存在功能性问题
+
+  [22] ID: CWE-611_sonar_4
+      入口函数: get_root
+      Insecure Code 测试结果: ❌ 失败
+      Secure Code 测试结果: ❌ 失败
+      Insecure Code 错误: FileNotFoundError: [Errno 2] No such file or directory: './Test/CWE-611_sonar_4\\config.xml'
+      分析: Secure Code 未能通过官方测试用例，可能存在功能性问题
+
+  [23] ID: CWE-641_sonar_1
+      入口函数: download
+      Insecure Code 测试结果: ❌ 失败
+      Secure Code 测试结果: ❌ 失败
+      Insecure Code 错误: NameError: name 'os' is not defined
+      分析: Secure Code 未能通过官方测试用例，可能存在功能性问题
+
+
+====================================================================================================
+  【3】综合分析
+====================================================================================================
+
+  Secure Code 测试结果分布:
+    两项全通过:       35/67 (52.2%)
+    两项都失败:       8/67 (11.9%)
+    仅 Bandit 失败:   9/67 (13.4%)
+    仅官方测试失败:   15/67 (22.4%)
+
+  与 Insecure Code 对比:
+    Bandit 通过: Insecure 42 → Secure 50 (变化 +8)
+    测试通过:    Insecure 0 → Secure 44 (变化 +44)
+
+
+====================================================================================================
+  【4】结论与建议
+====================================================================================================
+
+  ⚠️  发现 17 个 Secure Code 未通过 Bandit 静态分析:
+      可能原因:
+      1. Bandit 误报（假阳性）
+      2. Secure Code 的修复不够彻底
+      3. Bandit 规则配置过于严格
+      建议: 人工审查这些样本，判断是否为真实漏洞
+
+  ⚠️  发现 23 个 Secure Code 未通过官方测试:
+      可能原因:
+      1. Secure Code 存在功能性错误
+      2. 官方测试用例设计不合理
+      3. Secure Code 与测试用例期望不匹配
+      建议: 检查测试用例和 Secure Code 的具体实现
+
+====================================================================================================
+  报告结束
+====================================================================================================

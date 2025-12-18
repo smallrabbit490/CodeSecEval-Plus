@@ -7,6 +7,6 @@ class InputMutatorAgent:
         self.funname = funname
 
     def mutate_inputs(self):
-        
-        mutated_inputs = fuzz_function(self.inputs,self.code,self.funname)
-        return mutated_inputs
+        # 返回 (变异后的输入, 扰动类型信息)
+        mutated_inputs, mutation_meta = fuzz_function(self.inputs, self.code, self.funname)
+        return mutated_inputs, mutation_meta
